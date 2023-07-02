@@ -2,11 +2,13 @@
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Windows.Input;
 using Catel.Collections;
 using Catel.IoC;
 using Catel.MVVM;
 using Catel.Services;
+using MahApps.Metro.Controls;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -21,6 +23,7 @@ namespace SpriteFactory.Sprites
         private SpriteBatch _spriteBatch;
         private Texture2D _backgroundTexture;
         private SpriteFont _spriteFont;
+        private KeyFrameViewModel currentKeyFrame;
 
         public event EventHandler ContentLoaded;
 
@@ -329,6 +332,8 @@ namespace SpriteFactory.Sprites
                     var index = frameIndex.Value;
                     var keyFrame = new KeyFrameViewModel(index, () => TexturePath, GetFrameRectangle);
                     SelectedKeyFrames.Add(keyFrame);
+
+                    currentKeyFrame = keyFrame;
                 }
             }
         }
@@ -544,6 +549,20 @@ namespace SpriteFactory.Sprites
                 _spriteBatch.DrawRectangle(previewRectangle, Color.White * 0.5f);
                 _spriteBatch.Draw(Texture, previewRectangle, sourceRectangle, Color.White);
                 _spriteBatch.End();
+
+                ////////
+
+                if (currentKeyFrame != null)
+                {
+                    Rectangle hitBoxSpriteEditorRectange = new Rectangle(0, 0, previewRectangle.Width, previewRectangle.Height);
+                    Rectangle hitBoxKeyFrameEditorRectange = new Rectangle(currentKeyFrame.Region.X, currentKeyFrame.Region.Y, currentKeyFrame.Region.Width, currentKeyFrame.Region.Height);
+
+                    _spriteBatch.Begin(blendState: BlendState.AlphaBlend, samplerState: SamplerState.PointWrap);
+                    _spriteBatch.Draw(_backgroundTexture, hitBoxSpriteEditorRectange, null, Color.White);
+                    _spriteBatch.DrawRectangle(hitBoxSpriteEditorRectange, Color.White * 0.5f);
+                    _spriteBatch.Draw(Texture, hitBoxSpriteEditorRectange, hitBoxKeyFrameEditorRectange, Color.White);
+                    _spriteBatch.End();
+                }
             }
 
             // debug text
@@ -552,8 +571,12 @@ namespace SpriteFactory.Sprites
             if (frameIndex.HasValue)
             {
                 var frameRectangle = GetFrameRectangle(frameIndex.Value);
+
+                string text = $"frame: {frameIndex} ({frameRectangle.X}, {frameRectangle.Y})";
+                Vector2 position = new Vector2((GraphicsDevice.Viewport.Bounds.Width / 2) - (_spriteFont.MeasureString(text).X / 2), 0);
+
                 _spriteBatch.Begin(blendState: BlendState.AlphaBlend, samplerState: SamplerState.PointWrap);
-                _spriteBatch.DrawString(_spriteFont, $"frame: {frameIndex} ({frameRectangle.X}, {frameRectangle.Y})", Vector2.Zero, Color.White);
+                _spriteBatch.DrawString(_spriteFont, text, position, Color.White);
                 _spriteBatch.End();
             }
         }
