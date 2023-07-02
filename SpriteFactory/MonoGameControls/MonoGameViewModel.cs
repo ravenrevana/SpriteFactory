@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Data.SqlTypes;
 using System.Windows;
+using System.Windows.Input;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -66,5 +68,6 @@ namespace SpriteFactory.MonoGameControls
         public virtual void OnMouseWheel(MouseStateArgs args, int delta) { }
         public virtual void OnDrop(DragStateArgs dragState) { }
         public virtual void OnSizeChanged(int width, int height) { }
+        public virtual void OnKeyDown(KeyEventArgs e) { }
     }
 }

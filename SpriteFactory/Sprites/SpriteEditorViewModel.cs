@@ -23,7 +23,7 @@ namespace SpriteFactory.Sprites
         private Texture2D _backgroundTexture;
         private SpriteFont _spriteFont;
 
-        private List<(Rectangle, int)> currentHitBoxRectangles = new List<(Rectangle,int)>();
+        private List<HitBox> currentHitBoxRectangles = new List<HitBox>();
         private KeyFrameViewModel currentKeyFrame;
         private Rectangle currentHitBoxSelectionRectangle;
         private Vector2 currentHitBoxSelectionOrigin;
@@ -323,7 +323,7 @@ namespace SpriteFactory.Sprites
         }
 
         private Vector2 _previousMousePosition;
-        
+
         public override void OnMouseDown(MouseStateArgs mouseState)
         {
             if (mouseState.LeftButton == ButtonState.Pressed)
@@ -339,27 +339,60 @@ namespace SpriteFactory.Sprites
 
                     ////
 
-                    currentKeyFrame = keyFrame;                   
+                    currentKeyFrame = keyFrame;
                 }
 
                 ////
 
                 Vector2 currentMousePositon = new Vector2(mouseState.Position.X, mouseState.Position.Y);
-                Rectangle mousePositionIntersect = new Rectangle((int)currentMousePositon.X, (int)currentMousePositon.Y, 0, 0);
                 Rectangle previewRectangle = new Rectangle(0, 0, GetPreviewRectangle().Width, GetPreviewRectangle().Height);
+                bool rectangleIsNotSelected = true;
 
-                if (previewRectangle.Intersects(mousePositionIntersect))
+                foreach (HitBox hitBox in currentHitBoxRectangles)
+                {
+                    if (hitBox.keyFrameIndex != currentKeyFrame.Index) continue;
+
+                    if (hitBox.hitBoxRectangle.Contains(currentMousePositon))
+                    {
+                        rectangleIsNotSelected = false;
+                        hitBox.isSelected = true;
+                    }
+                }
+
+                if (previewRectangle.Contains(currentMousePositon) && rectangleIsNotSelected)
                 {
                     currentHitBoxSelectionOrigin = currentMousePositon;
                     currentHitBoxSelectionIsOn = true;
                 }
             }
+
+            if (mouseState.RightButton == ButtonState.Pressed)
+            {
+                Vector2 currentMousePositon = new Vector2(mouseState.Position.X, mouseState.Position.Y);
+                Rectangle previewRectangle = new Rectangle(0, 0, GetPreviewRectangle().Width, GetPreviewRectangle().Height);
+
+                foreach (HitBox hitBox in currentHitBoxRectangles)
+                {
+                    if (hitBox.keyFrameIndex != currentKeyFrame.Index) continue;
+
+                    if (hitBox.hitBoxRectangle.Contains(currentMousePositon))
+                    {
+                        hitBox.isSelected = false;
+                    }
+                }
+            }
         }
+
         public override void OnMouseUp(MouseStateArgs mouseState)
         {
+            if (currentKeyFrame == null) return;
+
             if (currentHitBoxSelectionIsOn)
             {
-                currentHitBoxRectangles.Add((currentHitBoxSelectionRectangle, currentKeyFrame.Index));
+                if (currentHitBoxSelectionRectangle.Width == 0) return;
+                if (currentHitBoxSelectionRectangle.Height == 0) return;
+
+                currentHitBoxRectangles.Add(new HitBox(currentHitBoxSelectionRectangle, currentKeyFrame.Index, false));
                 currentHitBoxSelectionRectangle = new Rectangle(0, 0, 0, 0);
                 currentHitBoxSelectionIsOn = false;
             }
@@ -620,12 +653,16 @@ namespace SpriteFactory.Sprites
                     _spriteBatch.DrawRectangle(currentHitBoxSelectionRectangle, Color.Red, 1);
                     _spriteBatch.End();
 
-                    foreach((Rectangle,int) rectangle in currentHitBoxRectangles)
+                    foreach(HitBox hitBox in currentHitBoxRectangles)
                     {
-                        if (rectangle.Item2 != currentKeyFrame.Index) continue;
+                        if (hitBox.keyFrameIndex != currentKeyFrame.Index) continue;
+
+                        Color color = Color.Yellow;
+
+                        if (hitBox.isSelected) color = Color.Green;
 
                         _spriteBatch.Begin(blendState: BlendState.AlphaBlend, samplerState: SamplerState.PointWrap);
-                        _spriteBatch.DrawRectangle(rectangle.Item1, Color.Yellow, 1);
+                        _spriteBatch.DrawRectangle(hitBox.hitBoxRectangle, color, 1);
                         _spriteBatch.End();
                     }
                 }
