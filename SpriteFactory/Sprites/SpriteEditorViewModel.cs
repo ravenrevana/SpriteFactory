@@ -1,14 +1,13 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Windows.Input;
 using Catel.Collections;
 using Catel.IoC;
 using Catel.MVVM;
 using Catel.Services;
-using MahApps.Metro.Controls;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -23,7 +22,12 @@ namespace SpriteFactory.Sprites
         private SpriteBatch _spriteBatch;
         private Texture2D _backgroundTexture;
         private SpriteFont _spriteFont;
+
+        private List<Rectangle> currentHitBoxRectangles = new List<Rectangle>();
         private KeyFrameViewModel currentKeyFrame;
+        private Rectangle currentHitBoxSelectionRectangle;
+        private Vector2 currentHitBoxSelectionOrigin;
+        private bool currentHitBoxSelectionIsOn;
 
         public event EventHandler ContentLoaded;
 
@@ -333,8 +337,31 @@ namespace SpriteFactory.Sprites
                     var keyFrame = new KeyFrameViewModel(index, () => TexturePath, GetFrameRectangle);
                     SelectedKeyFrames.Add(keyFrame);
 
-                    currentKeyFrame = keyFrame;
+                    ////
+
+                    currentKeyFrame = keyFrame;                   
                 }
+
+                ////
+
+                Vector2 currentMousePositon = new Vector2(mouseState.Position.X, mouseState.Position.Y);
+                Rectangle mousePositionIntersect = new Rectangle((int)currentMousePositon.X, (int)currentMousePositon.Y, 0, 0);
+                Rectangle previewRectangle = new Rectangle(0, 0, GetPreviewRectangle().Width, GetPreviewRectangle().Height);
+
+                if (previewRectangle.Intersects(mousePositionIntersect))
+                {
+                    currentHitBoxSelectionOrigin = currentMousePositon;
+                    currentHitBoxSelectionIsOn = true;
+                }
+            }
+        }
+        public override void OnMouseUp(MouseStateArgs mouseState)
+        {
+            if (currentHitBoxSelectionIsOn)
+            {
+                currentHitBoxRectangles.Add(currentHitBoxSelectionRectangle);
+                currentHitBoxSelectionRectangle = new Rectangle(0, 0, 0, 0);
+                currentHitBoxSelectionIsOn = false;
             }
         }
 
@@ -394,6 +421,29 @@ namespace SpriteFactory.Sprites
             }
 
             _previousMousePosition = mouseState.Position;
+
+            ////
+
+            if (currentHitBoxSelectionIsOn)
+            {
+                Vector2 position = new Vector2((int)currentHitBoxSelectionOrigin.X, (int)currentHitBoxSelectionOrigin.Y);
+
+                int width = (int)mouseState.Position.X - (int)currentHitBoxSelectionOrigin.X;
+                int height = (int)mouseState.Position.Y - (int)currentHitBoxSelectionOrigin.Y;
+
+                if (width < 0)
+                {
+                    width = width * -1;
+                    position.X = position.X - width;
+                }
+                if (height < 0)
+                {
+                    height = height * -1;
+                    position.Y = position.Y - height;
+                }
+
+                currentHitBoxSelectionRectangle = new Rectangle((int)position.X, (int)position.Y, width, height);
+            }
         }
 
         private int _frameIndex;
@@ -562,6 +612,20 @@ namespace SpriteFactory.Sprites
                     _spriteBatch.DrawRectangle(hitBoxSpriteEditorRectange, Color.White * 0.5f);
                     _spriteBatch.Draw(Texture, hitBoxSpriteEditorRectange, hitBoxKeyFrameEditorRectange, Color.White);
                     _spriteBatch.End();
+
+                    //////
+                    ///
+
+                    _spriteBatch.Begin(blendState: BlendState.AlphaBlend, samplerState: SamplerState.PointWrap);
+                    _spriteBatch.DrawRectangle(currentHitBoxSelectionRectangle, Color.Red, 1);
+                    _spriteBatch.End();
+
+                    foreach(Rectangle rectangle in currentHitBoxRectangles)
+                    {
+                        _spriteBatch.Begin(blendState: BlendState.AlphaBlend, samplerState: SamplerState.PointWrap);
+                        _spriteBatch.DrawRectangle(rectangle, Color.Yellow, 1);
+                        _spriteBatch.End();
+                    }
                 }
             }
 
