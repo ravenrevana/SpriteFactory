@@ -23,7 +23,7 @@ namespace SpriteFactory.Sprites
         private Texture2D _backgroundTexture;
         private SpriteFont _spriteFont;
 
-        private List<Rectangle> currentHitBoxRectangles = new List<Rectangle>();
+        private List<(Rectangle, int)> currentHitBoxRectangles = new List<(Rectangle,int)>();
         private KeyFrameViewModel currentKeyFrame;
         private Rectangle currentHitBoxSelectionRectangle;
         private Vector2 currentHitBoxSelectionOrigin;
@@ -359,7 +359,7 @@ namespace SpriteFactory.Sprites
         {
             if (currentHitBoxSelectionIsOn)
             {
-                currentHitBoxRectangles.Add(currentHitBoxSelectionRectangle);
+                currentHitBoxRectangles.Add((currentHitBoxSelectionRectangle, currentKeyFrame.Index));
                 currentHitBoxSelectionRectangle = new Rectangle(0, 0, 0, 0);
                 currentHitBoxSelectionIsOn = false;
             }
@@ -620,10 +620,12 @@ namespace SpriteFactory.Sprites
                     _spriteBatch.DrawRectangle(currentHitBoxSelectionRectangle, Color.Red, 1);
                     _spriteBatch.End();
 
-                    foreach(Rectangle rectangle in currentHitBoxRectangles)
+                    foreach((Rectangle,int) rectangle in currentHitBoxRectangles)
                     {
+                        if (rectangle.Item2 != currentKeyFrame.Index) continue;
+
                         _spriteBatch.Begin(blendState: BlendState.AlphaBlend, samplerState: SamplerState.PointWrap);
-                        _spriteBatch.DrawRectangle(rectangle, Color.Yellow, 1);
+                        _spriteBatch.DrawRectangle(rectangle.Item1, Color.Yellow, 1);
                         _spriteBatch.End();
                     }
                 }
