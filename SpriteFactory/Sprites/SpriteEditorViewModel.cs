@@ -453,8 +453,6 @@ namespace SpriteFactory.Sprites
                 }
             }
 
-            _previousMousePosition = mouseState.Position;
-
             ////
 
             if (currentHitBoxSelectionIsOn)
@@ -477,6 +475,21 @@ namespace SpriteFactory.Sprites
 
                 currentHitBoxSelectionRectangle = new Rectangle((int)position.X, (int)position.Y, width, height);
             }
+
+            Vector2 currentMousePositon = new Vector2(mouseState.Position.X, mouseState.Position.Y);
+
+            foreach (HitBox hitBox in currentHitBoxRectangles)
+            {
+                if (hitBox.keyFrameIndex != currentKeyFrame.Index) continue;
+                if (!hitBox.isSelected) continue;
+
+                Vector2 position = _previousMousePosition - currentMousePositon;
+
+                hitBox.hitBoxRectangle.X = hitBox.hitBoxRectangle.X - (int)position.X;
+                hitBox.hitBoxRectangle.Y = hitBox.hitBoxRectangle.Y - (int)position.Y;
+            }
+
+            _previousMousePosition = mouseState.Position;
         }
 
         private int _frameIndex;
