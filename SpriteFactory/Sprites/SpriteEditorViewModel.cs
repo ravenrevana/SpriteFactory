@@ -381,6 +381,20 @@ namespace SpriteFactory.Sprites
                     }
                 }
             }
+
+            if (mouseState.MiddleButton == ButtonState.Pressed)
+            {
+                Vector2 currentMousePositon = new Vector2(mouseState.Position.X, mouseState.Position.Y);
+                Rectangle previewRectangle = new Rectangle(0, 0, GetPreviewRectangle().Width, GetPreviewRectangle().Height);
+
+                foreach (HitBox hitBox in currentHitBoxRectangles.ToList())
+                {
+                    if (hitBox.keyFrameIndex != currentKeyFrame.Index) continue;
+                    if (!hitBox.hitBoxRectangle.Contains(currentMousePositon)) continue;
+
+                    currentHitBoxRectangles.Remove(hitBox);
+                }
+            }
         }
 
         public override void OnMouseUp(MouseStateArgs mouseState)
