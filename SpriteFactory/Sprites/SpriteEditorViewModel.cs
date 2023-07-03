@@ -352,11 +352,13 @@ namespace SpriteFactory.Sprites
                 {
                     if (hitBox.keyFrameIndex != currentKeyFrame.Index) continue;
 
-                    if (hitBox.hitBoxRectangle.Contains(currentMousePositon))
-                    {
-                        rectangleIsNotSelected = false;
-                        hitBox.isSelected = true;
-                    }
+                    Rectangle scaleRectangle = HitBox.ScaleHitBoxUp(hitBox.hitBoxRectangle, SelectedPreviewZoom.Value);
+
+                    if (!scaleRectangle.Contains(currentMousePositon)) continue;
+
+                    rectangleIsNotSelected = false;
+                    hitBox.isSelected = true;
+                    hitBox.hitBoxRectangle = scaleRectangle;
                 }
 
                 if (previewRectangle.Contains(currentMousePositon) && rectangleIsNotSelected)
@@ -374,11 +376,13 @@ namespace SpriteFactory.Sprites
                 foreach (HitBox hitBox in currentHitBoxRectangles)
                 {
                     if (hitBox.keyFrameIndex != currentKeyFrame.Index) continue;
+                    if (!previewRectangle.Contains(currentMousePositon)) continue;
+                    //Rectangle scaleRectangle = HitBox.ScaleHitBoxUp(hitBox.hitBoxRectangle, SelectedPreviewZoom.Value);
+                    //if (!scaleRectangle.Contains(currentMousePositon)) continue;
 
-                    if (hitBox.hitBoxRectangle.Contains(currentMousePositon))
-                    {
-                        hitBox.isSelected = false;
-                    }
+                    if (hitBox.isSelected) hitBox.hitBoxRectangle = HitBox.ScaleHitBoxDown(hitBox.hitBoxRectangle, SelectedPreviewZoom.Value);
+                        
+                    hitBox.isSelected = false;
                 }
             }
 
@@ -390,7 +394,11 @@ namespace SpriteFactory.Sprites
                 foreach (HitBox hitBox in currentHitBoxRectangles.ToList())
                 {
                     if (hitBox.keyFrameIndex != currentKeyFrame.Index) continue;
-                    if (!hitBox.hitBoxRectangle.Contains(currentMousePositon)) continue;
+                    if (!previewRectangle.Contains(currentMousePositon)) continue;
+
+                    Rectangle scaleRectangle = HitBox.ScaleHitBoxUp(hitBox.hitBoxRectangle, SelectedPreviewZoom.Value);
+
+                    if (!scaleRectangle.Contains(currentMousePositon)) continue;
 
                     currentHitBoxRectangles.Remove(hitBox);
                 }
@@ -406,17 +414,17 @@ namespace SpriteFactory.Sprites
                 if (currentHitBoxSelectionRectangle.Width == 0) return;
                 if (currentHitBoxSelectionRectangle.Height == 0) return;
 
-                currentHitBoxRectangles.Add(new HitBox(currentHitBoxSelectionRectangle, currentKeyFrame.Index, false));
+                Rectangle scaleRectangle = HitBox.ScaleHitBoxDown(currentHitBoxSelectionRectangle, SelectedPreviewZoom.Value);
+
+                currentHitBoxRectangles.Add(new HitBox(scaleRectangle, currentKeyFrame.Index, false));
                 currentHitBoxSelectionRectangle = new Rectangle(0, 0, 0, 0);
                 currentHitBoxSelectionIsOn = false;
             }
         }
-
         public override void OnMouseWheel(MouseStateArgs args, int delta)
         {
             Camera.ZoomIn(delta / 1000f);
         }
-
         private int? GetFrameIndex()
         {
             if (Texture == null || !Texture.Bounds.Contains(WorldPosition))
@@ -473,8 +481,8 @@ namespace SpriteFactory.Sprites
             {
                 Vector2 position = new Vector2((int)currentHitBoxSelectionOrigin.X, (int)currentHitBoxSelectionOrigin.Y);
 
-                int width = (int)mouseState.Position.X - (int)currentHitBoxSelectionOrigin.X;
-                int height = (int)mouseState.Position.Y - (int)currentHitBoxSelectionOrigin.Y;
+                int width = ((int)mouseState.Position.X - (int)currentHitBoxSelectionOrigin.X);
+                int height = ((int)mouseState.Position.Y - (int)currentHitBoxSelectionOrigin.Y);
 
                 if (width < 0)
                 {
@@ -499,8 +507,11 @@ namespace SpriteFactory.Sprites
 
                 Vector2 position = _previousMousePosition - currentMousePositon;
 
-                hitBox.hitBoxRectangle.X = hitBox.hitBoxRectangle.X - (int)position.X;
-                hitBox.hitBoxRectangle.Y = hitBox.hitBoxRectangle.Y - (int)position.Y;
+                float diffX = hitBox.hitBoxRectangle.X - position.X;
+                float diffY = hitBox.hitBoxRectangle.Y - position.Y;
+
+                hitBox.hitBoxRectangle.X = (int)diffX;
+                hitBox.hitBoxRectangle.Y = (int)diffY;
             }
 
             _previousMousePosition = mouseState.Position;
@@ -683,10 +694,23 @@ namespace SpriteFactory.Sprites
                     foreach(HitBox hitBox in currentHitBoxRectangles)
                     {
                         if (hitBox.keyFrameIndex != currentKeyFrame.Index) continue;
+                        if (hitBox.isSelected) continue;
 
                         Color color = Color.Yellow;
 
-                        if (hitBox.isSelected) color = Color.Green;
+                        Rectangle scaleRectangle = HitBox.ScaleHitBoxUp(hitBox.hitBoxRectangle, SelectedPreviewZoom.Value);
+
+                        _spriteBatch.Begin(blendState: BlendState.AlphaBlend, samplerState: SamplerState.PointWrap);
+                        _spriteBatch.DrawRectangle(scaleRectangle, color, 1);
+                        _spriteBatch.End();
+                    }
+
+                    foreach (HitBox hitBox in currentHitBoxRectangles)
+                    {
+                        if (hitBox.keyFrameIndex != currentKeyFrame.Index) continue;
+                        if (!hitBox.isSelected) continue;
+
+                        Color color = Color.Green;
 
                         _spriteBatch.Begin(blendState: BlendState.AlphaBlend, samplerState: SamplerState.PointWrap);
                         _spriteBatch.DrawRectangle(hitBox.hitBoxRectangle, color, 1);
