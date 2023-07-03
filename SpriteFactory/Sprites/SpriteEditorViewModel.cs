@@ -502,6 +502,7 @@ namespace SpriteFactory.Sprites
 
             foreach (HitBox hitBox in currentHitBoxRectangles)
             {
+                if (currentKeyFrame == null) continue;
                 if (hitBox.keyFrameIndex != currentKeyFrame.Index) continue;
                 if (!hitBox.isSelected) continue;
 
@@ -559,7 +560,8 @@ namespace SpriteFactory.Sprites
                     RegionWidth = TileWidth,
                     RegionHeight = TileHeight
                 },
-                Cycles = Animations.ToDictionary(a => a.Name, a => a.ToAnimationCycle())
+                Cycles = Animations.ToDictionary(a => a.Name, a => a.ToAnimationCycle()),
+                Hitboxes = currentHitBoxRectangles
             };
         }
 
@@ -578,6 +580,8 @@ namespace SpriteFactory.Sprites
                 Animations.Add(KeyFrameAnimationViewModel.FromAnimation(name, animation, () => TexturePath, GetFrameRectangle));
             }
             SelectedAnimation = Animations.FirstOrDefault();
+
+            currentHitBoxRectangles = data.Hitboxes;
         }
 
         private KeyFrameViewModel GetCurrentFrame()
