@@ -26,6 +26,8 @@ namespace SpriteFactory.Sprites
 
         private List<HitBox> currentHitBoxRectangles = new List<HitBox>();
         private KeyFrameViewModel currentKeyFrame;
+        private Color currentHitBoxSelectionRectangleColor = Color.Green;
+        private Color currentHitBoxNewRectangleColor = Color.Red;
         private Rectangle currentHitBoxSelectionRectangle;
         private Vector2 currentHitBoxSelectionOrigin;
         private bool currentHitBoxSelectionIsOn;
@@ -36,6 +38,7 @@ namespace SpriteFactory.Sprites
             { "HurtBox", Color.CadetBlue },
         };
         private string _SelectedHitBoxType;
+
         public string SelectedHitBoxType
         {
             get => _SelectedHitBoxType;
@@ -711,7 +714,7 @@ namespace SpriteFactory.Sprites
                     ///
 
                     _spriteBatch.Begin(blendState: BlendState.AlphaBlend, samplerState: SamplerState.PointWrap);
-                    _spriteBatch.DrawRectangle(currentHitBoxSelectionRectangle, Color.Red, 1);
+                    _spriteBatch.DrawRectangle(currentHitBoxSelectionRectangle, currentHitBoxNewRectangleColor, 1);
                     _spriteBatch.End();
 
                     foreach(HitBox hitBox in currentHitBoxRectangles)
@@ -719,12 +722,10 @@ namespace SpriteFactory.Sprites
                         if (hitBox.keyFrameIndex != currentKeyFrame.Index) continue;
                         if (hitBox.isSelected) continue;
 
-                        Color color = HitBoxTypeList[hitBox.type];
-
                         Rectangle scaleRectangle = HitBox.ScaleHitBoxUp(hitBox.hitBoxRectangle, SelectedPreviewZoom.Value);
 
                         _spriteBatch.Begin(blendState: BlendState.AlphaBlend, samplerState: SamplerState.PointWrap);
-                        _spriteBatch.DrawRectangle(scaleRectangle, color, 1);
+                        _spriteBatch.DrawRectangle(scaleRectangle, HitBoxTypeList[hitBox.type], 1);
                         _spriteBatch.End();
                     }
 
@@ -733,10 +734,8 @@ namespace SpriteFactory.Sprites
                         if (hitBox.keyFrameIndex != currentKeyFrame.Index) continue;
                         if (!hitBox.isSelected) continue;
 
-                        Color color = Color.Green;
-
                         _spriteBatch.Begin(blendState: BlendState.AlphaBlend, samplerState: SamplerState.PointWrap);
-                        _spriteBatch.DrawRectangle(hitBox.hitBoxRectangle, color, 1);
+                        _spriteBatch.DrawRectangle(hitBox.hitBoxRectangle, currentHitBoxSelectionRectangleColor, 1);
                         _spriteBatch.End();
                     }
                 }
