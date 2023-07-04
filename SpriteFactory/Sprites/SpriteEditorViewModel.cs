@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Security.Policy;
 using System.Windows.Input;
 using Catel.Collections;
 using Catel.IoC;
@@ -28,6 +29,13 @@ namespace SpriteFactory.Sprites
         private Rectangle currentHitBoxSelectionRectangle;
         private Vector2 currentHitBoxSelectionOrigin;
         private bool currentHitBoxSelectionIsOn;
+
+        public string[] HitBoxTypeList { get; } = new string[]
+        { 
+            "HitBox",
+            "HurtBox"
+        };
+        public string SelectedHitBoxType;
 
         public event EventHandler ContentLoaded;
 
