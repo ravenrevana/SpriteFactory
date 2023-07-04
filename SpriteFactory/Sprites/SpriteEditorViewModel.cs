@@ -721,8 +721,8 @@ namespace SpriteFactory.Sprites
 
                         Color color = Color.Yellow;
 
-                        if (SelectedHitBoxType.Equals(HitBoxTypeList[0])) { color = Color.Blue; }
-                        if (SelectedHitBoxType.Equals(HitBoxTypeList[1])) { color = Color.Orange; }
+                        if (hitBox.type.Equals(HitBoxTypeList[0])) { color = Color.Blue; }
+                        if (hitBox.type.Equals(HitBoxTypeList[1])) { color = Color.Orange; }
 
                         Rectangle scaleRectangle = HitBox.ScaleHitBoxUp(hitBox.hitBoxRectangle, SelectedPreviewZoom.Value);
 
