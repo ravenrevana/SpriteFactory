@@ -350,10 +350,12 @@ namespace SpriteFactory.Sprites
 
                 foreach (HitBox hitBox in currentHitBoxRectangles)
                 {
+                    Rectangle scaleRectangle = new Rectangle();
+
+                    if (currentKeyFrame == null) continue;
                     if (hitBox.keyFrameIndex != currentKeyFrame.Index) continue;
-
-                    Rectangle scaleRectangle = HitBox.ScaleHitBoxUp(hitBox.hitBoxRectangle, SelectedPreviewZoom.Value);
-
+                    if (!hitBox.isSelected) scaleRectangle = HitBox.ScaleHitBoxUp(hitBox.hitBoxRectangle, SelectedPreviewZoom.Value);
+                    if (hitBox.isSelected) scaleRectangle = hitBox.hitBoxRectangle;
                     if (!scaleRectangle.Contains(currentMousePositon)) continue;
 
                     rectangleIsNotSelected = false;
@@ -377,9 +379,7 @@ namespace SpriteFactory.Sprites
                 {
                     if (hitBox.keyFrameIndex != currentKeyFrame.Index) continue;
                     if (!previewRectangle.Contains(currentMousePositon)) continue;
-                    //Rectangle scaleRectangle = HitBox.ScaleHitBoxUp(hitBox.hitBoxRectangle, SelectedPreviewZoom.Value);
-                    //if (!scaleRectangle.Contains(currentMousePositon)) continue;
-
+                    if (!hitBox.hitBoxRectangle.Contains(currentMousePositon)) continue;
                     if (hitBox.isSelected) hitBox.hitBoxRectangle = HitBox.ScaleHitBoxDown(hitBox.hitBoxRectangle, SelectedPreviewZoom.Value);
                         
                     hitBox.isSelected = false;
@@ -393,11 +393,10 @@ namespace SpriteFactory.Sprites
 
                 foreach (HitBox hitBox in currentHitBoxRectangles.ToList())
                 {
-                    if (hitBox.keyFrameIndex != currentKeyFrame.Index) continue;
-                    if (!previewRectangle.Contains(currentMousePositon)) continue;
-
                     Rectangle scaleRectangle = HitBox.ScaleHitBoxUp(hitBox.hitBoxRectangle, SelectedPreviewZoom.Value);
 
+                    if (hitBox.keyFrameIndex != currentKeyFrame.Index) continue;
+                    if (!previewRectangle.Contains(currentMousePositon)) continue;
                     if (!scaleRectangle.Contains(currentMousePositon)) continue;
 
                     currentHitBoxRectangles.Remove(hitBox);
@@ -411,10 +410,10 @@ namespace SpriteFactory.Sprites
 
             if (currentHitBoxSelectionIsOn)
             {
+                Rectangle scaleRectangle = HitBox.ScaleHitBoxDown(currentHitBoxSelectionRectangle, SelectedPreviewZoom.Value);
+
                 if (currentHitBoxSelectionRectangle.Width == 0) return;
                 if (currentHitBoxSelectionRectangle.Height == 0) return;
-
-                Rectangle scaleRectangle = HitBox.ScaleHitBoxDown(currentHitBoxSelectionRectangle, SelectedPreviewZoom.Value);
 
                 currentHitBoxRectangles.Add(new HitBox(scaleRectangle, currentKeyFrame.Index, false));
                 currentHitBoxSelectionRectangle = new Rectangle(0, 0, 0, 0);
@@ -498,21 +497,24 @@ namespace SpriteFactory.Sprites
                 currentHitBoxSelectionRectangle = new Rectangle((int)position.X, (int)position.Y, width, height);
             }
 
-            Vector2 currentMousePositon = new Vector2(mouseState.Position.X, mouseState.Position.Y);
-
-            foreach (HitBox hitBox in currentHitBoxRectangles)
+            if (mouseState.LeftButton == ButtonState.Pressed)
             {
-                if (currentKeyFrame == null) continue;
-                if (hitBox.keyFrameIndex != currentKeyFrame.Index) continue;
-                if (!hitBox.isSelected) continue;
+                Vector2 currentMousePositon = new Vector2(mouseState.Position.X, mouseState.Position.Y);
 
-                Vector2 position = _previousMousePosition - currentMousePositon;
+                foreach (HitBox hitBox in currentHitBoxRectangles)
+                {
+                    if (currentKeyFrame == null) continue;
+                    if (hitBox.keyFrameIndex != currentKeyFrame.Index) continue;
+                    if (!hitBox.isSelected) continue;
 
-                float diffX = hitBox.hitBoxRectangle.X - position.X;
-                float diffY = hitBox.hitBoxRectangle.Y - position.Y;
+                    Vector2 position = _previousMousePosition - currentMousePositon;
 
-                hitBox.hitBoxRectangle.X = (int)diffX;
-                hitBox.hitBoxRectangle.Y = (int)diffY;
+                    float diffX = hitBox.hitBoxRectangle.X - position.X;
+                    float diffY = hitBox.hitBoxRectangle.Y - position.Y;
+
+                    hitBox.hitBoxRectangle.X = (int)diffX;
+                    hitBox.hitBoxRectangle.Y = (int)diffY;
+                }
             }
 
             _previousMousePosition = mouseState.Position;
