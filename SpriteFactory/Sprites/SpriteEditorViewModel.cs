@@ -35,7 +35,12 @@ namespace SpriteFactory.Sprites
             "HitBox",
             "HurtBox"
         };
-        public string SelectedHitBoxType;
+        private string _SelectedHitBoxType;
+        public string SelectedHitBoxType
+        {
+            get => _SelectedHitBoxType;
+            set => SetPropertyValue(ref _SelectedHitBoxType, value, nameof(SelectedHitBoxType));
+        }
 
         public event EventHandler ContentLoaded;
 
@@ -77,6 +82,10 @@ namespace SpriteFactory.Sprites
             MoveFrameRightCommand = new Command(() => MoveFrame(1));
             DuplicateFrameCommand = new Command(DuplicateFrame);
             DeleteFrameCommand = new Command(DeleteFrame);
+
+            /////
+
+            SelectedHitBoxType = HitBoxTypeList[0];
         }
 
         private void DeleteFrame()
@@ -423,7 +432,7 @@ namespace SpriteFactory.Sprites
                 if (currentHitBoxSelectionRectangle.Width == 0) return;
                 if (currentHitBoxSelectionRectangle.Height == 0) return;
 
-                currentHitBoxRectangles.Add(new HitBox(scaleRectangle, currentKeyFrame.Index, false));
+                currentHitBoxRectangles.Add(new HitBox(scaleRectangle, currentKeyFrame.Index, false, SelectedHitBoxType));
                 currentHitBoxSelectionRectangle = new Rectangle(0, 0, 0, 0);
                 currentHitBoxSelectionIsOn = false;
             }
@@ -711,6 +720,9 @@ namespace SpriteFactory.Sprites
                         if (hitBox.isSelected) continue;
 
                         Color color = Color.Yellow;
+
+                        if (SelectedHitBoxType.Equals(HitBoxTypeList[0])) { color = Color.Blue; }
+                        if (SelectedHitBoxType.Equals(HitBoxTypeList[1])) { color = Color.Orange; }
 
                         Rectangle scaleRectangle = HitBox.ScaleHitBoxUp(hitBox.hitBoxRectangle, SelectedPreviewZoom.Value);
 

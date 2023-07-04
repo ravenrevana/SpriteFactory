@@ -8,14 +8,15 @@ namespace SpriteFactory
         public Rectangle hitBoxRectangle;
         public int keyFrameIndex;
         public bool isSelected;
+        public string type;
 
-        public HitBox(Rectangle hitBoxRectangle, int keyFrameIndex, bool isSelected) 
+        public HitBox(Rectangle hitBoxRectangle, int keyFrameIndex, bool isSelected, string type) 
         {
             this.hitBoxRectangle = hitBoxRectangle;
             this.keyFrameIndex = keyFrameIndex;
             this.isSelected = isSelected;
+            this.type = type;
         }
-
         public static Rectangle ScaleHitBoxDown(Rectangle rec, int zoom)
         {
             // Math Ceiling and Floor are used because selection should include all selected pixel
@@ -28,7 +29,6 @@ namespace SpriteFactory
 
             return new Rectangle(posX, posY, scaleWidth, scaleHeight);
         }
-
         public static Rectangle ScaleHitBoxUp(Rectangle rec, int zoom)
         {
             // Math Ceiling and Floor are used because selection should include all selected pixel
