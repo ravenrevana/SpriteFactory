@@ -30,10 +30,10 @@ namespace SpriteFactory.Sprites
         private Vector2 currentHitBoxSelectionOrigin;
         private bool currentHitBoxSelectionIsOn;
 
-        public string[] HitBoxTypeList { get; } = new string[]
-        { 
-            "HitBox",
-            "HurtBox"
+        public Dictionary<string,Color> HitBoxTypeList { get; } = new Dictionary<string, Color>
+        {
+            { "HitBox", Color.Orange },
+            { "HurtBox", Color.CadetBlue },
         };
         private string _SelectedHitBoxType;
         public string SelectedHitBoxType
@@ -85,7 +85,7 @@ namespace SpriteFactory.Sprites
 
             /////
 
-            SelectedHitBoxType = HitBoxTypeList[0];
+            SelectedHitBoxType = HitBoxTypeList.FirstOrDefault().Key;
         }
 
         private void DeleteFrame()
@@ -719,10 +719,7 @@ namespace SpriteFactory.Sprites
                         if (hitBox.keyFrameIndex != currentKeyFrame.Index) continue;
                         if (hitBox.isSelected) continue;
 
-                        Color color = Color.Yellow;
-
-                        if (hitBox.type.Equals(HitBoxTypeList[0])) { color = Color.Blue; }
-                        if (hitBox.type.Equals(HitBoxTypeList[1])) { color = Color.Orange; }
+                        Color color = HitBoxTypeList[hitBox.type];
 
                         Rectangle scaleRectangle = HitBox.ScaleHitBoxUp(hitBox.hitBoxRectangle, SelectedPreviewZoom.Value);
 

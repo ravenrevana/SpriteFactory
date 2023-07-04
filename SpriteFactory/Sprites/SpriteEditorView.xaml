@@ -303,7 +303,7 @@
             </Grid>
             <Separator Height="41" />
             <Label Content="HitBox Type" />
-            <ComboBox ItemsSource="{Binding HitBoxTypeList}"
+            <ComboBox ItemsSource="{Binding HitBoxTypeList.Keys}"
                       SelectedItem="{Binding SelectedHitBoxType}" />
         </StackPanel>
     </Grid>
