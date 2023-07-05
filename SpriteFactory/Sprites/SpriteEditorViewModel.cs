@@ -383,14 +383,14 @@ namespace SpriteFactory.Sprites
                     hitBox.hitBoxRectangle = scaleRectangle;
                 }
 
-                if (previewRectangle.Contains(currentMousePositon) && rectangleIsNotSelected)
+                if (previewRectangle.Contains(currentMousePositon) && rectangleIsNotSelected && mouseState.RightButton != ButtonState.Pressed)
                 {
                     currentHitBoxSelectionOrigin = currentMousePositon;
                     currentHitBoxSelectionIsOn = true;
                 }
             }
 
-            if (mouseState.RightButton == ButtonState.Pressed)
+            if (mouseState.RightButton == ButtonState.Pressed && mouseState.LeftButton != ButtonState.Pressed)
             {
                 Vector2 currentMousePositon = new Vector2(mouseState.Position.X, mouseState.Position.Y);
                 Rectangle previewRectangle = new Rectangle(0, 0, GetPreviewRectangle().Width, GetPreviewRectangle().Height);
@@ -403,6 +403,21 @@ namespace SpriteFactory.Sprites
                     if (hitBox.isSelected) hitBox.hitBoxRectangle = HitBox.ScaleHitBoxDown(hitBox.hitBoxRectangle, SelectedPreviewZoom.Value);
                         
                     hitBox.isSelected = false;
+                }
+            }
+
+            if (mouseState.RightButton == ButtonState.Pressed && mouseState.LeftButton == ButtonState.Pressed)
+            {
+                Vector2 currentMousePositon = new Vector2(mouseState.Position.X, mouseState.Position.Y);
+                Rectangle previewRectangle = new Rectangle(0, 0, GetPreviewRectangle().Width, GetPreviewRectangle().Height);
+
+                foreach (HitBox hitBox in currentHitBoxRectangles.ToList())
+                {
+                    Rectangle scaleRectangle = HitBox.ScaleHitBoxDown(hitBox.hitBoxRectangle, SelectedPreviewZoom.Value);
+
+                    if (!hitBox.isSelected) continue;
+
+                    currentHitBoxRectangles.Add(new HitBox(scaleRectangle, currentKeyFrame.Index, false, SelectedHitBoxType));
                 }
             }
 
@@ -423,7 +438,6 @@ namespace SpriteFactory.Sprites
                 }
             }
         }
-
         public override void OnMouseUp(MouseStateArgs mouseState)
         {
             if (currentKeyFrame == null) return;
@@ -440,43 +454,10 @@ namespace SpriteFactory.Sprites
                 currentHitBoxSelectionIsOn = false;
             }
         }
-        public override void OnMouseWheel(MouseStateArgs args, int delta)
-        {
-            Camera.ZoomIn(delta / 1000f);
-        }
-        private int? GetFrameIndex()
-        {
-            if (Texture == null || !Texture.Bounds.Contains(WorldPosition))
-                return null;
-
-            var columns = Texture.Width / TileWidth;
-            var cx = (int)(WorldPosition.X / TileWidth);
-            var cy = (int)(WorldPosition.Y / TileHeight);
-            var frameIndex = cy * columns + cx;
-
-            return frameIndex;
-        }
-
-        private Rectangle GetFrameRectangle(int frame)
-        {
-            var columns = Texture.Width / TileWidth;
-            var cy = frame / columns;
-            var cx = frame - cy * columns;
-            var rectangle = new Rectangle(cx * TileWidth, cy * TileHeight, TileWidth, TileHeight);
-
-            if (rectangle.Right > TextureBounds.Right)
-                return Rectangle.Empty;
-
-            if(rectangle.Bottom > TextureBounds.Bottom)
-                return Rectangle.Empty;
-
-            return rectangle;
-        }
-
         public override void OnMouseMove(MouseStateArgs mouseState)
         {
             WorldPosition = Camera.ScreenToWorld(mouseState.Position);
-            
+
             var previousWorldPosition = Camera.ScreenToWorld(_previousMousePosition);
             var mouseDelta = previousWorldPosition - WorldPosition;
 
@@ -538,6 +519,39 @@ namespace SpriteFactory.Sprites
             }
 
             _previousMousePosition = mouseState.Position;
+        }
+        public override void OnMouseWheel(MouseStateArgs args, int delta)
+        {
+            Camera.ZoomIn(delta / 1000f);
+        }
+
+        private int? GetFrameIndex()
+        {
+            if (Texture == null || !Texture.Bounds.Contains(WorldPosition))
+                return null;
+
+            var columns = Texture.Width / TileWidth;
+            var cx = (int)(WorldPosition.X / TileWidth);
+            var cy = (int)(WorldPosition.Y / TileHeight);
+            var frameIndex = cy * columns + cx;
+
+            return frameIndex;
+        }
+
+        private Rectangle GetFrameRectangle(int frame)
+        {
+            var columns = Texture.Width / TileWidth;
+            var cy = frame / columns;
+            var cx = frame - cy * columns;
+            var rectangle = new Rectangle(cx * TileWidth, cy * TileHeight, TileWidth, TileHeight);
+
+            if (rectangle.Right > TextureBounds.Right)
+                return Rectangle.Empty;
+
+            if(rectangle.Bottom > TextureBounds.Bottom)
+                return Rectangle.Empty;
+
+            return rectangle;
         }
 
         private int _frameIndex;
