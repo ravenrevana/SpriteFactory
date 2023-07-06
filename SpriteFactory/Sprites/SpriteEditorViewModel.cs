@@ -397,6 +397,7 @@ namespace SpriteFactory.Sprites
 
                 foreach (HitBox hitBox in currentHitBoxRectangles)
                 {
+                    if (currentKeyFrame == null) continue;
                     if (hitBox.keyFrameIndex != currentKeyFrame.Index) continue;
                     if (!previewRectangle.Contains(currentMousePositon)) continue;
                     if (!hitBox.hitBoxRectangle.Contains(currentMousePositon)) continue;
@@ -430,6 +431,7 @@ namespace SpriteFactory.Sprites
                 {
                     Rectangle scaleRectangle = HitBox.ScaleHitBoxUp(hitBox.hitBoxRectangle, SelectedPreviewZoom.Value);
 
+                    if (currentKeyFrame == null) continue; 
                     if (hitBox.keyFrameIndex != currentKeyFrame.Index) continue;
                     if (!previewRectangle.Contains(currentMousePositon)) continue;
                     if (!scaleRectangle.Contains(currentMousePositon)) continue;
