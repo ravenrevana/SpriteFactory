@@ -195,7 +195,8 @@ namespace SpriteFactory.Sprites
             new ZoomOptionViewModel(1),
             new ZoomOptionViewModel(2),
             new ZoomOptionViewModel(4),
-            new ZoomOptionViewModel(8)
+            new ZoomOptionViewModel(8),
+            new ZoomOptionViewModel(16)
         };
 
         private ZoomOptionViewModel _selectedPreviewZoom;
@@ -564,7 +565,7 @@ namespace SpriteFactory.Sprites
             if(TileWidth == 0 || TileHeight == 0)
                 return Rectangle.Empty;
 
-            const int max = 256;
+            const int max = 1024;
             var previewZoom = SelectedPreviewZoom.Value;
             var width = TileWidth * previewZoom;
             var height = TileHeight * previewZoom;
