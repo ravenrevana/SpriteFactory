@@ -3,20 +3,17 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
-using System.Security.Policy;
 using System.Windows.Input;
 using Catel.Collections;
 using Catel.IoC;
 using Catel.MVVM;
 using Catel.Services;
-using MahApps.Metro.Controls;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using MonoGame.Extended;
 using SpriteFactory.Documents;
 using SpriteFactory.MonoGameControls;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace SpriteFactory.Sprites
 {
