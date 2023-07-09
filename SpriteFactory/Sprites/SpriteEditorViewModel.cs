@@ -9,12 +9,14 @@ using Catel.Collections;
 using Catel.IoC;
 using Catel.MVVM;
 using Catel.Services;
+using MahApps.Metro.Controls;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using MonoGame.Extended;
 using SpriteFactory.Documents;
 using SpriteFactory.MonoGameControls;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace SpriteFactory.Sprites
 {
@@ -31,6 +33,13 @@ namespace SpriteFactory.Sprites
         private Rectangle currentHitBoxSelectionRectangle;
         private Vector2 currentHitBoxSelectionOrigin;
         private bool currentHitBoxSelectionIsOn;
+
+        private float _SelectedHitBoxFactor = 1.0f;
+        public float SelectedHitBoxFactor
+        {
+            get => _SelectedHitBoxFactor;
+            set => SetPropertyValue(ref _SelectedHitBoxFactor, value, nameof(SelectedHitBoxFactor));
+        }
 
         public Dictionary<string,Color> HitBoxTypeList { get; } = new Dictionary<string, Color>
         {
@@ -56,7 +65,7 @@ namespace SpriteFactory.Sprites
             MoveAnimationUpCommand = new Command(() => MoveAnimation(-1), () => SelectedAnimation != null);
             MoveAnimationDownCommand = new Command(() => MoveAnimation(1), () => SelectedAnimation != null);
 
-            SelectedPreviewZoom = PreviewZoomOptions.LastOrDefault();
+            SelectedPreviewZoom = PreviewZoomOptions.FirstOrDefault();
 
             IsPlaying = true;
 
@@ -419,7 +428,7 @@ namespace SpriteFactory.Sprites
 
                     if (!hitBox.isSelected) continue;
 
-                    currentHitBoxRectangles.Add(new HitBox(scaleRectangle, currentKeyFrame.Index, false, SelectedHitBoxType));
+                    currentHitBoxRectangles.Add(new HitBox(scaleRectangle, currentKeyFrame.Index, false, SelectedHitBoxType, SelectedHitBoxFactor));
                 }
             }
 
@@ -452,7 +461,7 @@ namespace SpriteFactory.Sprites
                 if (currentHitBoxSelectionRectangle.Width == 0) return;
                 if (currentHitBoxSelectionRectangle.Height == 0) return;
 
-                currentHitBoxRectangles.Add(new HitBox(scaleRectangle, currentKeyFrame.Index, false, SelectedHitBoxType));
+                currentHitBoxRectangles.Add(new HitBox(scaleRectangle, currentKeyFrame.Index, false, SelectedHitBoxType, SelectedHitBoxFactor));
                 currentHitBoxSelectionRectangle = new Rectangle(0, 0, 0, 0);
                 currentHitBoxSelectionIsOn = false;
             }
@@ -730,6 +739,8 @@ namespace SpriteFactory.Sprites
                     //////
                     ///
 
+                    // Draw current new triangle e.g. the one that will be placed after drag and drop
+
                     _spriteBatch.Begin(blendState: BlendState.AlphaBlend, samplerState: SamplerState.PointWrap);
                     _spriteBatch.DrawRectangle(currentHitBoxSelectionRectangle, currentHitBoxNewRectangleColor, 1);
                     _spriteBatch.End();
@@ -739,15 +750,28 @@ namespace SpriteFactory.Sprites
                         if (hitBox.keyFrameIndex != currentKeyFrame.Index) continue;
                         if (hitBox.isSelected) continue;
 
+                        // Draw rectangle with color of its current type
+
                         Rectangle scaleRectangle = HitBox.ScaleHitBoxUp(hitBox.hitBoxRectangle, SelectedPreviewZoom.Value);
 
                         _spriteBatch.Begin(blendState: BlendState.AlphaBlend, samplerState: SamplerState.PointWrap);
                         _spriteBatch.DrawRectangle(scaleRectangle, HitBoxTypeList[hitBox.type], 1);
                         _spriteBatch.End();
+
+                        // Draw factor in center of rectangle
+
+                        string text = hitBox.factor.ToString() + "x";
+                        Vector2 position = new Vector2((scaleRectangle.X + scaleRectangle.Width / 2) - (_spriteFont.MeasureString(text).X / 2), (scaleRectangle.Y + scaleRectangle.Height / 2) - (_spriteFont.MeasureString(text).Y / 2));
+
+                        _spriteBatch.Begin(blendState: BlendState.AlphaBlend, samplerState: SamplerState.PointWrap);
+                        _spriteBatch.DrawString(_spriteFont, hitBox.factor.ToString() + "x", position, HitBoxTypeList[hitBox.type]);
+                        _spriteBatch.End();
                     }
 
                     foreach (HitBox hitBox in currentHitBoxRectangles)
                     {
+                        // Draw currently selected triangle
+
                         if (hitBox.keyFrameIndex != currentKeyFrame.Index) continue;
                         if (!hitBox.isSelected) continue;
 

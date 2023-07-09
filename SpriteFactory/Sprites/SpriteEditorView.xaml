@@ -305,6 +305,9 @@
             <Label Content="HitBox Type" />
             <ComboBox ItemsSource="{Binding HitBoxTypeList.Keys}"
                       SelectedItem="{Binding SelectedHitBoxType}" />
+            <Label Content="Factor" />
+            <TextBox TextWrapping="Wrap"
+                     Text="{Binding SelectedHitBoxFactor}" />
         </StackPanel>
     </Grid>
 </UserControl>
