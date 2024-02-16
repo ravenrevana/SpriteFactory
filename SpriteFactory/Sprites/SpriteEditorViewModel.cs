@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Windows.Input;
 using Catel.Collections;
 using Catel.IoC;
@@ -24,6 +25,7 @@ namespace SpriteFactory.Sprites
         private SpriteFont _spriteFont;
 
         private List<HitBox> currentHitBoxRectangles = new List<HitBox>();
+        private List<Audio> currentAudio = new List<Audio>();
         private KeyFrameViewModel currentKeyFrame;
         private Color currentHitBoxSelectionRectangleColor = Color.Green;
         private Color currentHitBoxNewRectangleColor = Color.Red;
@@ -32,16 +34,73 @@ namespace SpriteFactory.Sprites
         private bool currentHitBoxSelectionIsOn;
 
         private float _SelectedHitBoxFactor = 1.0f;
+        private string _SelectedAudioFileName = "-";
+        private int _SelectedAudioDelay = 0;
+        private bool _ShowHitBox;
+        private bool _ShowAudio;
+        private bool _ShowHitBoxAll;
+        private bool _ShowAudioAll;
         public float SelectedHitBoxFactor
         {
             get => _SelectedHitBoxFactor;
             set => SetPropertyValue(ref _SelectedHitBoxFactor, value, nameof(SelectedHitBoxFactor));
+        }
+        public string SelectedAudioFileName
+        {
+            get => _SelectedAudioFileName;
+            set 
+            { 
+                SetPropertyValue(ref _SelectedAudioFileName, value, nameof(SelectedAudioFileName));
+
+                if (currentKeyFrame == null) return;
+
+                // Remove audio from keyframe if linked and return since no new audio was added
+                if (_SelectedAudioFileName == "-" || string.IsNullOrWhiteSpace(_SelectedAudioFileName))
+                {
+                    currentAudio.RemoveAll(x => x.keyFrameIndex == currentKeyFrame.Index);
+                    return;
+                }
+
+                int index = currentAudio.FindIndex(x => x.keyFrameIndex == currentKeyFrame.Index);
+
+                // Replace audio in keyframe index if already in list
+                if (index != -1) currentAudio[index] = new Audio(_SelectedAudioFileName, _SelectedAudioDelay, SelectedAnimation.Name, currentKeyFrame.Index);
+
+                // Add audio if audio not already linked to keyframe
+                else currentAudio.Add(new Audio(_SelectedAudioFileName, _SelectedAudioDelay, SelectedAnimation.Name, currentKeyFrame.Index));
+            }
+        }
+        public int SelectedAudioDelay
+        {
+            get => _SelectedAudioDelay;
+            set => SetPropertyValue(ref _SelectedAudioDelay, value, nameof(SelectedAudioDelay));
+        }
+        public bool ShowHitBox
+        {
+            get => _ShowHitBox;
+            set => SetPropertyValue(ref _ShowHitBox, value, nameof(ShowHitBox));
+        }
+        public bool ShowAudio
+        {
+            get => _ShowAudio;
+            set => SetPropertyValue(ref _ShowAudio, value, nameof(ShowAudio));
+        }
+        public bool ShowHitBoxAll
+        {
+            get => _ShowHitBoxAll;
+            set => SetPropertyValue(ref _ShowHitBoxAll, value, nameof(ShowHitBoxAll));
+        }
+        public bool ShowAudioAll
+        {
+            get => _ShowAudioAll;
+            set => SetPropertyValue(ref _ShowAudioAll, value, nameof(ShowAudioAll));
         }
 
         public Dictionary<string,Color> HitBoxTypeList { get; } = new Dictionary<string, Color>
         {
             { "HitBox", Color.Orange },
             { "HurtBox", Color.CadetBlue },
+            { "CollisionBox", Color.GreenYellow },
         };
         private string _SelectedHitBoxType;
 
@@ -381,6 +440,7 @@ namespace SpriteFactory.Sprites
 
                     if (currentKeyFrame == null) continue;
                     if (hitBox.keyFrameIndex != currentKeyFrame.Index) continue;
+                    if (hitBox.type != _SelectedHitBoxType) continue;
                     if (!hitBox.isSelected) scaleRectangle = HitBox.ScaleHitBoxUp(hitBox.hitBoxRectangle, SelectedPreviewZoom.Value);
                     if (hitBox.isSelected) scaleRectangle = hitBox.hitBoxRectangle;
                     if (!scaleRectangle.Contains(currentMousePositon)) continue;
@@ -425,7 +485,7 @@ namespace SpriteFactory.Sprites
 
                     if (!hitBox.isSelected) continue;
 
-                    currentHitBoxRectangles.Add(new HitBox(scaleRectangle, currentKeyFrame.Index, false, SelectedHitBoxType, SelectedHitBoxFactor));
+                    currentHitBoxRectangles.Add(new HitBox(scaleRectangle, currentKeyFrame.Index, false, SelectedHitBoxType, SelectedHitBoxFactor, SelectedAnimation.Name));
                 }
             }
 
@@ -442,6 +502,7 @@ namespace SpriteFactory.Sprites
                     if (hitBox.keyFrameIndex != currentKeyFrame.Index) continue;
                     if (!previewRectangle.Contains(currentMousePositon)) continue;
                     if (!scaleRectangle.Contains(currentMousePositon)) continue;
+                    if (hitBox.type != _SelectedHitBoxType) continue;
 
                     currentHitBoxRectangles.Remove(hitBox);
                 }
@@ -458,7 +519,7 @@ namespace SpriteFactory.Sprites
                 if (currentHitBoxSelectionRectangle.Width == 0) return;
                 if (currentHitBoxSelectionRectangle.Height == 0) return;
 
-                currentHitBoxRectangles.Add(new HitBox(scaleRectangle, currentKeyFrame.Index, false, SelectedHitBoxType, SelectedHitBoxFactor));
+                currentHitBoxRectangles.Add(new HitBox(scaleRectangle, currentKeyFrame.Index, false, SelectedHitBoxType, SelectedHitBoxFactor, SelectedAnimation.Name));
                 currentHitBoxSelectionRectangle = new Rectangle(0, 0, 0, 0);
                 currentHitBoxSelectionIsOn = false;
             }
@@ -594,7 +655,7 @@ namespace SpriteFactory.Sprites
             var x = GraphicsDevice.Viewport.Width - width;
             return new Rectangle(x, 0, width, height);
         }
-
+        // Save document
         public SpriteFactoryFile GetDocumentContent(Document<SpriteFactoryFile> document)
         {
             return new SpriteFactoryFile
@@ -606,10 +667,11 @@ namespace SpriteFactory.Sprites
                     RegionHeight = TileHeight
                 },
                 Cycles = Animations.ToDictionary(a => a.Name, a => a.ToAnimationCycle()),
-                Hitboxes = currentHitBoxRectangles
+                Hitboxes = currentHitBoxRectangles,
+                Audio = currentAudio
             };
         }
-
+        // Load document
         public void SetDocumentContent(Document<SpriteFactoryFile> document)
         {
             var data = document.Content;
@@ -627,6 +689,7 @@ namespace SpriteFactory.Sprites
             SelectedAnimation = Animations.FirstOrDefault();
 
             currentHitBoxRectangles = data.Hitboxes;
+            currentAudio = data.Audio;
         }
 
         private KeyFrameViewModel GetCurrentFrame()
@@ -687,6 +750,69 @@ namespace SpriteFactory.Sprites
 
             _spriteBatch.Draw(Texture, sourceRectangle: boundingRectangle, destinationRectangle: boundingRectangle, color: Color.White);
 
+            // hitboxes on main texture if showhitbox is ticked
+            foreach (HitBox hitBox in currentHitBoxRectangles)
+            {
+                if (!_ShowHitBox) break;
+                if (SelectedAnimation.Name != hitBox.cycle && !_ShowHitBoxAll) continue;
+
+                // Draw rectangle with color of its current type
+
+                float cx = (hitBox.keyFrameIndex % (Texture.Width / TileWidth));
+                float cy = (hitBox.keyFrameIndex / (Texture.Width / TileWidth));
+
+                float posX = cx * TileWidth;
+                float posY = cy * TileHeight;
+
+                Rectangle scaleRectangle = new Rectangle((int)posX + hitBox.hitBoxRectangle.X, (int)posY + hitBox.hitBoxRectangle.Y, hitBox.hitBoxRectangle.Width, hitBox.hitBoxRectangle.Height);
+
+                // Default hitbox color for hitboxes not in current cycle
+                Color hitBoxColor = Color.White;
+
+                // Changed color for hitbox on current selected cycle
+                if (SelectedAnimation.Name == hitBox.cycle) hitBoxColor = HitBoxTypeList[hitBox.type];
+
+                _spriteBatch.DrawRectangle(scaleRectangle, hitBoxColor, 1);
+
+                // Draw factor in center of rectangle
+
+                string text = hitBox.factor.ToString() + "x";
+                Vector2 position = new Vector2((scaleRectangle.X + scaleRectangle.Width / 2) - (_spriteFont.MeasureString(text).X / 2), (scaleRectangle.Y + scaleRectangle.Height / 2) - (_spriteFont.MeasureString(text).Y / 2));
+
+                _spriteBatch.DrawString(_spriteFont, hitBox.factor.ToString() + "x", position, hitBoxColor);
+            }
+
+            // audio on main texture if showaudio is ticked
+            foreach (Audio audio in currentAudio)
+            {
+                if (!_ShowAudio) break;
+                if (SelectedAnimation.Name != audio.cycle && !_ShowAudioAll) continue;
+
+                // Draw rectangle with color of its current type
+
+                float cx = (audio.keyFrameIndex % (Texture.Width / TileWidth));
+                float cy = (audio.keyFrameIndex / (Texture.Width / TileWidth));
+
+                float posX = cx * TileWidth;
+                float posY = cy * TileHeight;
+
+                // Draw audio text
+
+                string text = audio.name + "(" + audio.delay + ")";
+
+                //Vector2 position = new Vector2(_spriteFont.MeasureString(text).X/2, 0) + new Vector2(posX, posY);
+
+                Vector2 position = new Vector2(0, 0) + new Vector2(posX, posY);
+
+                // Default text color for audio not in current cycle
+                Color textColor = Color.White;
+
+                // Changed text color for audio on current selected cycle
+                if (SelectedAnimation.Name == audio.cycle) textColor = Color.IndianRed;
+
+                _spriteBatch.DrawString(_spriteFont, text, position, textColor);
+            }
+
             // highlighter
             if (TileWidth > 1 && TileHeight > 1)
             {
@@ -724,19 +850,19 @@ namespace SpriteFactory.Sprites
 
                 if (currentKeyFrame != null)
                 {
-                    Rectangle hitBoxSpriteEditorRectange = new Rectangle(0, 0, previewRectangle.Width, previewRectangle.Height);
-                    Rectangle hitBoxKeyFrameEditorRectange = new Rectangle(currentKeyFrame.Region.X, currentKeyFrame.Region.Y, currentKeyFrame.Region.Width, currentKeyFrame.Region.Height);
+                    Rectangle hitBoxSpriteEditorRectangle = new Rectangle(0, 0, previewRectangle.Width, previewRectangle.Height);
+                    Rectangle hitBoxKeyFrameEditorRectangle = new Rectangle(currentKeyFrame.Region.X, currentKeyFrame.Region.Y, currentKeyFrame.Region.Width, currentKeyFrame.Region.Height);
 
                     _spriteBatch.Begin(blendState: BlendState.AlphaBlend, samplerState: SamplerState.PointWrap);
-                    _spriteBatch.Draw(_backgroundTexture, hitBoxSpriteEditorRectange, null, Color.White);
-                    _spriteBatch.DrawRectangle(hitBoxSpriteEditorRectange, Color.White * 0.5f);
-                    _spriteBatch.Draw(Texture, hitBoxSpriteEditorRectange, hitBoxKeyFrameEditorRectange, Color.White);
+                    _spriteBatch.Draw(_backgroundTexture, hitBoxSpriteEditorRectangle, null, Color.White);
+                    _spriteBatch.DrawRectangle(hitBoxSpriteEditorRectangle, Color.White * 0.5f);
+                    _spriteBatch.Draw(Texture, hitBoxSpriteEditorRectangle, hitBoxKeyFrameEditorRectangle, Color.White);
                     _spriteBatch.End();
 
                     //////
                     ///
 
-                    // Draw current new triangle e.g. the one that will be placed after drag and drop
+                    // Draw current new rectangle e.g. the one that will be placed after drag and drop
 
                     _spriteBatch.Begin(blendState: BlendState.AlphaBlend, samplerState: SamplerState.PointWrap);
                     _spriteBatch.DrawRectangle(currentHitBoxSelectionRectangle, currentHitBoxNewRectangleColor, 1);
@@ -746,6 +872,7 @@ namespace SpriteFactory.Sprites
                     {
                         if (hitBox.keyFrameIndex != currentKeyFrame.Index) continue;
                         if (hitBox.isSelected) continue;
+                        if (SelectedAnimation.Name != hitBox.cycle) continue;
 
                         // Draw rectangle with color of its current type
 

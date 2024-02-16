@@ -305,9 +305,62 @@
             <Label Content="HitBox Type" />
             <ComboBox ItemsSource="{Binding HitBoxTypeList.Keys}"
                       SelectedItem="{Binding SelectedHitBoxType}" />
-            <Label Content="Factor" />
+            <Label Content="HitBox Factor" />
             <TextBox TextWrapping="Wrap"
                      Text="{Binding SelectedHitBoxFactor}" />
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition></RowDefinition>
+                    <RowDefinition></RowDefinition>
+                </Grid.RowDefinitions>
+                <TextBlock Margin="5"
+                           VerticalAlignment="Center"
+                           Grid.Column="0"
+                           Grid.Row="0"
+                           Text="HitBox [Visible, All]"
+                           Foreground="White" />
+                <CheckBox Grid.Column="1"
+                          Grid.Row="0"
+                          IsChecked="{Binding ShowHitBox}" />
+                <CheckBox Grid.Column="2"
+                          Grid.Row="0"
+                          IsChecked="{Binding ShowHitBoxAll}" />
+            </Grid>
+            <Separator Height="41" />
+            <Label Content="Audio File Name" />
+            <TextBox TextWrapping="Wrap"
+                     Text="{Binding SelectedAudioFileName}" />
+            <Label Content="Audio Delay (ms)" />
+            <TextBox TextWrapping="Wrap"
+                     Text="{Binding SelectedAudioDelay}" />
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition></RowDefinition>
+                    <RowDefinition></RowDefinition>
+                </Grid.RowDefinitions>
+                <TextBlock Margin="5"
+                           VerticalAlignment="Center"
+                           Grid.Column="0"
+                           Grid.Row="0"
+                           Text="Audio [Visible, All]"
+                           Foreground="White" />
+                <CheckBox Grid.Column="1"
+                          Grid.Row="0"
+                          IsChecked="{Binding ShowAudio}" />
+                <CheckBox Grid.Column="2"
+                          Grid.Row="0"
+                          IsChecked="{Binding ShowAudioAll}" />
+            </Grid>
         </StackPanel>
     </Grid>
 </UserControl>

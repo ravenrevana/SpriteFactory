@@ -10,14 +10,16 @@ namespace SpriteFactory
         public int keyFrameIndex;
         public bool isSelected;
         public string type;
+        public string cycle;
 
-        public HitBox(Rectangle hitBoxRectangle, int keyFrameIndex, bool isSelected, string type, float factor) 
+        public HitBox(Rectangle hitBoxRectangle, int keyFrameIndex, bool isSelected, string type, float factor, string cycle) 
         {
             this.hitBoxRectangle = hitBoxRectangle;
             this.keyFrameIndex = keyFrameIndex;
             this.isSelected = isSelected;
             this.type = type;
             this.factor = factor;
+            this.cycle = cycle;
         }
         public static Rectangle ScaleHitBoxDown(Rectangle rec, int zoom)
         {

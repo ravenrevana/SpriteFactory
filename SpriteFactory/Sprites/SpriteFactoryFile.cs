@@ -14,5 +14,6 @@ namespace SpriteFactory.Sprites
         public TextureAtlas TextureAtlas { get; set; } = new TextureAtlas();
         public Dictionary<string, KeyFrameAnimationCycle> Cycles { get; set; } = new Dictionary<string, KeyFrameAnimationCycle>();
         public List<HitBox> Hitboxes { get; set; } = new List<HitBox>();
+        public List<Audio> Audio { get; set; } = new List<Audio>();
     }
 }
