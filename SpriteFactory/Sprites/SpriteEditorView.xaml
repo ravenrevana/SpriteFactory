@@ -259,7 +259,9 @@
                     </ToolBar>
                     <ListBox ItemsSource="{Binding Animations}"
                              SelectedItem="{Binding SelectedAnimation}"
-                             MinHeight="200">
+                             ScrollViewer.VerticalScrollBarVisibility="Visible"
+                             MinHeight="200"
+                             MaxHeight="200">
                         <ListBox.ItemTemplate>
                             <DataTemplate DataType="sprites:KeyFrameAnimationViewModel">
                                 <controls:EditableTextBlock Text="{Binding Name}" />
