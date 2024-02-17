@@ -13,6 +13,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using MonoGame.Extended;
+using MonoGame.Extended.Sprites;
 using SpriteFactory.Documents;
 using SpriteFactory.MonoGameControls;
 
@@ -441,6 +442,7 @@ namespace SpriteFactory.Sprites
                     if (currentKeyFrame == null) continue;
                     if (hitBox.keyFrameIndex != currentKeyFrame.Index) continue;
                     if (hitBox.type != _SelectedHitBoxType) continue;
+                    if (hitBox.cycle != SelectedAnimation.Name) continue;
                     if (!hitBox.isSelected) scaleRectangle = HitBox.ScaleHitBoxUp(hitBox.hitBoxRectangle, SelectedPreviewZoom.Value);
                     if (hitBox.isSelected) scaleRectangle = hitBox.hitBoxRectangle;
                     if (!scaleRectangle.Contains(currentMousePositon)) continue;
@@ -503,6 +505,7 @@ namespace SpriteFactory.Sprites
                     if (!previewRectangle.Contains(currentMousePositon)) continue;
                     if (!scaleRectangle.Contains(currentMousePositon)) continue;
                     if (hitBox.type != _SelectedHitBoxType) continue;
+                    if (hitBox.cycle != SelectedAnimation.Name) continue;
 
                     currentHitBoxRectangles.Remove(hitBox);
                 }
